@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vänskapsspelet Deluxe</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts, Lucide Icons, Chart.js & Canvas Confetti -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <div class="glass-card">
+        <!-- STEG 1: LOBBY & INSTÄLLNINGAR -->
+        <div id="step-lobby" class="page active">
+            <!-- INFO-KNAPP ETT "i" I HÖRNET -->
+            <button class="info-trigger-btn" onclick="toggleInfoModal()" title="Hur man spelar">
+                <i data-lucide="info"></i>
+            </button>
+
+            <div class="header-icon"><i data-lucide="sparkles"></i></div>
+            <h1 class="title">Vänskapsspelet</h1>
+            <p class="subtitle">Spelet där ni avslöjar vad ni egentligen tycker om varandra!</p>
+
+            <div class="form-group">
+                <label><i data-lucide="user"></i> Ditt Spelarnamn</label>
+                <input type="text" id="player-name-input" placeholder="Skriv ditt namn...">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i data-lucide="users"></i> Antal spelare (1–10)</label>
+                    <input type="number" id="player-count" min="1" max="10" value="3">
+                </div>
+                <div class="form-group">
+                    <label><i data-lucide="repeat"></i> Antal rundor (1–20)</label>
+                    <input type="number" id="round-count" min="1" max="20" value="3">
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-glow" onclick="createRoom()">
+                <i data-lucide="play-circle"></i> Skapa Nytt Spel
+            </button>
+
+            <div class="divider"><span>ELLER</span></div>
+
+            <div class="form-group">
+                <label><i data-lucide="key-round"></i> Gå med i rum med kod</label>
+                <div class="join-group">
+                    <input type="text" id="room-code-input" placeholder="RUMSKOD" style="text-transform: uppercase;">
+                    <button class="btn btn-secondary" onclick="joinRoom()">Gå med</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEG 2: VÄNTRUM -->
+        <div id="step-waiting" class="page">
+            <div class="header-icon"><i data-lucide="door-open"></i></div>
+            <h2>Väntrum</h2>
+            <p class="subtitle">Bjud in dina vänner med följande kod:</p>
+            <div class="room-code-display" id="display-room-code">------</div>
+
+            <div class="section-title"><i data-lucide="users"></i> Anslutna spelare</div>
+            <ul id="connected-players-list" class="players-list"></ul>
+
+            <button id="start-game-btn" class="btn btn-success btn-glow hidden" onclick="startNewRound()">
+                <i data-lucide="zap"></i> Starta Spelet
+            </button>
+        </div>
+
+        <!-- STEG 3: SKRIVA FRÅGA -->
+        <div id="step-questions" class="page">
+            <div class="badge badge-pink" id="round-badge">Runda 1 av 3</div>
+            <h2 id="current-player-turn" class="player-turn-header">Spelare 1:s tur</h2>
+            <div id="timer" class="timer-badge"><i data-lucide="clock"></i> 30s</div>
+            
+            <p class="instruction">Skriv 1 fråga för denna runda!</p>
+
+            <div class="form-group">
+                <label><i data-lucide="help-circle"></i> Din Fråga</label>
+                <input type="text" id="q1" placeholder="t.ex. Vem skulle glömma sin egen födelsedag?">
+            </div>
+
+            <button class="btn btn-warning btn-glow" onclick="submitQuestion()">
+                <i data-lucide="send"></i> Skicka in fråga
+            </button>
+        </div>
+
+        <!-- STEG 4: RÖSTNING -->
+        <div id="step-voting" class="page">
+            <div class="badge badge-indigo"><i data-lucide="vote"></i> Dags att rösta</div>
+            <div id="question-display" class="question-card">Frågan visas här...</div>
+            
+            <p class="instruction">Vem passar denna fråga in på bäst?</p>
+            <div id="vote-buttons" class="vote-grid"></div>
+        </div>
+
+        <!-- STEG 5: DELRESULTAT -->
+        <div id="step-results" class="page">
+            <div class="badge badge-purple"><i data-lucide="bar-chart-2"></i> Resultat för frågan</div>
+            <div id="result-question-display" class="question-card">Frågan...</div>
+            <div id="results-container" class="results-container"></div>
+
+            <button id="next-question-btn" class="btn btn-primary btn-glow" onclick="nextQuestionOrRound()">
+                Fortsätt <i data-lucide="chevron-right"></i>
+            </button>
+        </div>
+
+        <!-- STEG 6: SLUTGILTIGT LEADERBOARD MED DIAGRAM -->
+        <div id="step-final" class="page">
+            <div class="trophy-header"><i data-lucide="trophy"></i></div>
+            <h1 class="title">Slutresultat</h1>
+            <p class="subtitle">Totalt antal röster och procentfördelning över alla rundor!</p>
+
+            <div class="chart-box">
+                <canvas id="finalVotesChart"></canvas>
+            </div>
+            
+            <div id="leaderboard-container" class="leaderboard-container"></div>
+
+            <div class="action-stack">
+                <button class="btn btn-secondary" onclick="toggleReviewScreen()">
+                    <i data-lucide="file-text"></i> Granska Alla Frågor & Röster
+                </button>
+                <button class="btn btn-primary btn-glow" onclick="location.reload()">
+                    <i data-lucide="rotate-ccw"></i> Spela Igen
+                </button>
+            </div>
+        </div>
+
+        <!-- STEG 7: REVIEW -->
+        <div id="step-review" class="page">
+            <h2>Spelöversikt <i data-lucide="search"></i></h2>
+            <p class="subtitle">Se vem som skrev vad och vad alla röstade!</p>
+
+            <div id="review-list" class="review-container"></div>
+
+            <button class="btn btn-primary" onclick="showPage('step-final')">
+                <i data-lucide="arrow-left"></i> Tillbaka till Diagram & Leaderboard
+            </button>
+        </div>
+    </div>
+
+    <!-- POPUP MODAL FÖR INSTRUKTIONER -->
+    <div id="info-modal" class="modal-overlay hidden" onclick="closeModalOnOverlay(event)">
+        <div class="modal-content">
+            <button class="modal-close-btn" onclick="toggleInfoModal()"><i data-lucide="x"></i></button>
+            <div class="info-title"><i data-lucide="help-circle"></i> Hur man spelar</div>
+            <ul class="info-list">
+                <li><strong>1. Välj inställningar:</strong> Bestäm antal spelare och hur många rundor ni vill spela.</li>
+                <li><strong>2. Skriv frågor:</strong> Varje runda får alla spelare 30 sekunder på sig att skriva en fråga.</li>
+                <li><strong>3. Rösta anonymt:</strong> Frågorna slumpas och alla röstar på den spelare som frågan passar bäst in på.</li>
+                <li><strong>4. Resultat & Diagram:</strong> Efter varje runda visas procentfördelningen och i slutet utses en vinnare!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
