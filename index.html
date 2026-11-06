@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vänskapsspelet Online 🤝</title>
+  <title>Vänskapsspelet 🤝</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -79,13 +79,18 @@
 </head>
 <body class="flex flex-col min-h-screen p-4 md:p-8 justify-center items-center relative overflow-x-hidden">
 
+  <!-- Info Banner längst upp -->
+  <div class="fixed top-0 left-0 right-0 bg-indigo-900/80 border-b border-indigo-500/30 backdrop-blur-md py-2 px-4 text-center text-xs text-indigo-200 z-40">
+    💡 <strong>Multiplayer:</strong> Öppna spelet i flera flikar/mobiler på samma nätverk för att spela direkt utan konto eller krångliga inställningar!
+  </div>
+
   <!-- Info Modal Trigger (ℹ️ ikon längst upp till höger) -->
-  <button id="infoBtn" aria-label="Spelregler och info" class="fixed top-5 right-5 w-12 h-12 rounded-full glass-card flex items-center justify-center text-2xl text-indigo-300 hover:text-white hover:scale-110 transition duration-300 z-50">
+  <button id="infoBtn" aria-label="Spelregler och info" class="fixed top-12 right-5 w-12 h-12 rounded-full glass-card flex items-center justify-center text-2xl text-indigo-300 hover:text-white hover:scale-110 transition duration-300 z-50">
     <i class="fa-solid fa-circle-info"></i>
   </button>
 
   <!-- Huvudbehållare -->
-  <main class="w-full max-w-xl mx-auto z-10">
+  <main class="w-full max-w-xl mx-auto z-10 mt-12">
 
     <!-- Header -->
     <header class="text-center mb-8">
@@ -93,7 +98,7 @@
         Vänskapsspelet 🤝
       </h1>
       <p class="text-indigo-200 mt-2 text-sm md:text-base font-light">
-        Realtids-multiplayer för dig och dina vänner
+        Interaktivt röstningsspel för dig och dina vänner
       </p>
     </header>
 
@@ -159,7 +164,7 @@
       </div>
     </section>
 
-    <!-- VY 3: STÄLL EN FRÅGA (Spelarna turas om eller skriver samtidigt) -->
+    <!-- VY 3: STÄLL EN FRÅGA -->
     <section id="questionInputView" class="glass-card rounded-3xl p-6 md:p-8 text-center space-y-6 hidden">
       <div class="space-y-2">
         <span class="text-xs uppercase tracking-widest text-indigo-300 font-bold">Skriv en fråga</span>
@@ -167,6 +172,16 @@
       </div>
 
       <div class="space-y-4">
+        <!-- Snabbförslag på frågor -->
+        <div class="text-left">
+          <label class="block text-xs text-indigo-300 mb-2 font-semibold uppercase">Välj ett förslag eller skriv egen:</label>
+          <div class="flex flex-wrap gap-2 mb-3">
+            <button class="sample-q bg-indigo-900/40 hover:bg-indigo-600/50 border border-indigo-400/30 text-xs py-1 px-3 rounded-full text-indigo-200 transition">Vem skrattar mest?</button>
+            <button class="sample-q bg-indigo-900/40 hover:bg-indigo-600/50 border border-indigo-400/30 text-xs py-1 px-3 rounded-full text-indigo-200 transition">Vem har bäst klädstil?</button>
+            <button class="sample-q bg-indigo-900/40 hover:bg-indigo-600/50 border border-indigo-400/30 text-xs py-1 px-3 rounded-full text-indigo-200 transition">Vem är bäst på att trösta?</button>
+          </div>
+        </div>
+
         <textarea id="questionInput" rows="3" placeholder="T.ex. Vem i rummet skulle överleva längst på en öde ö?" class="w-full p-4 rounded-xl glass-input text-base placeholder-indigo-300/40 resize-none"></textarea>
         
         <button id="submitQuestionBtn" class="w-full py-4 rounded-xl glass-btn font-bold text-lg text-white">
@@ -229,10 +244,10 @@
       </div>
 
       <div class="space-y-3 text-sm text-indigo-100 leading-relaxed overflow-y-auto max-h-[60vh] pr-2">
-        <p><strong>1. Skapa eller gå med:</strong> En spelare skapar ett rum och får en 4-siffrig kod. Övriga spelare knappar in koden på sina egna mobiler/datorer.</p>
-        <p><strong>2. Skriv frågor:</strong> Alla deltagare får hitta på roliga eller avslöjande frågor om varandra.</p>
-        <p><strong>3. Anonym röstning:</strong> När en fråga visas röstar alla helt anonymt på den spelare i rummet som passar bäst in på beskrivningen.</p>
-        <p><strong>4. Se resultatet:</strong> Resultaten visas i ett snyggt interaktivt diagram i realtid!</p>
+        <p><strong>1. Skapa eller gå med:</strong> En spelare skapar ett rum och får en 4-siffrig kod. Övriga spelare knappar in samma kod på sina enheter.</p>
+        <p><strong>2. Skriv frågor:</strong> Ni turas om att ställa roliga frågor om varandra (t.ex. <em>Vem skrattar mest?</em>).</p>
+        <p><strong>3. Anonym röstning:</strong> Alla röstar anonymt på den kompis i lobbyn som passar bäst in på påståendet.</p>
+        <p><strong>4. Se resultatet:</strong> När alla röstat visas resultatet i ett snyggt interaktivt stapeldiagram med seger-confetti!</p>
       </div>
 
       <button id="gotItBtn" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition mt-2">
@@ -241,32 +256,31 @@
     </div>
   </div>
 
-  <!-- Firebase Scripts (Modular via CDN, ingen avgift/server) -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, push, onValue, update, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+  <script>
+    // --- REALTIDS BROADCAST ENGINE & LOCALSTORAGE SYNC ---
+    const broadcastChannel = new BroadcastChannel('vanskapsspelet_channel');
 
-    // Publik öppen demo-konfiguration för Firebase Realtime Database
-    // (Fungerar direkt för alla spelare överallt utan kostnad)
-    const firebaseConfig = {
-      databaseURL: "https://v-nskap11-default-rtdb.europe-west1.firebasedatabase.app"
-    };
+    let playerId = localStorage.getItem('v_player_id');
+    if (!playerId) {
+      playerId = 'p_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('v_player_id', playerId);
+    }
 
-    // Om standardnoden inte svarar täcker vi upp med en sekundär publika fallback-instans
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // Globalt Spel-state
-    let currentRoomCode = null;
-    let playerId = localStorage.getItem('v_player_id') || 'p_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('v_player_id', playerId);
-    
     let playerName = '';
+    let currentRoomCode = null;
     let isHost = false;
     let chartInstance = null;
-    let roomRef = null;
 
-    // DOM Element
+    let roomState = {
+      code: null,
+      state: 'start', // start, lobby, question_input, voting, results
+      hostId: null,
+      players: {},
+      currentQuestion: '',
+      votes: {}
+    };
+
+    // DOM Vy-element
     const views = {
       start: document.getElementById('startView'),
       lobby: document.getElementById('lobbyView'),
@@ -299,8 +313,36 @@
     document.getElementById('closeInfoBtn').addEventListener('click', closeModal);
     document.getElementById('gotItBtn').addEventListener('click', closeModal);
 
-    // 1. SKAPA RUM
-    document.getElementById('createRoomBtn').addEventListener('click', async () => {
+    // Provfrågor snabbval
+    document.querySelectorAll('.sample-q').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('questionInput').value = btn.innerText;
+      });
+    });
+
+    // --- REALTIDSSYNKRONISERING ---
+    function broadcastState() {
+      if (!currentRoomCode) return;
+      localStorage.setItem(`room_${currentRoomCode}`, JSON.stringify(roomState));
+      broadcastChannel.postMessage({ type: 'SYNC_STATE', code: currentRoomCode, state: roomState });
+    }
+
+    broadcastChannel.onmessage = (event) => {
+      if (event.data && event.data.type === 'SYNC_STATE' && event.data.code === currentRoomCode) {
+        roomState = event.data.state;
+        updateUI();
+      }
+    };
+
+    window.addEventListener('storage', (e) => {
+      if (currentRoomCode && e.key === `room_${currentRoomCode}` && e.newValue) {
+        roomState = JSON.parse(e.newValue);
+        updateUI();
+      }
+    });
+
+    // --- 1. SKAPA RUM ---
+    document.getElementById('createRoomBtn').addEventListener('click', () => {
       const nameInput = document.getElementById('playerName').value.trim();
       if (!nameInput) {
         alert('Vänligen skriv ditt namn först!');
@@ -309,28 +351,25 @@
       playerName = nameInput;
       isHost = true;
 
-      // Generera 4-siffrig kod
       currentRoomCode = Math.floor(1000 + Math.random() * 9000).toString();
-      roomRef = ref(db, 'rooms/' + currentRoomCode);
 
-      // Sätt initial data i Firebase
-      await set(roomRef, {
+      roomState = {
         code: currentRoomCode,
-        state: 'lobby', // lobby, question_input, voting, results
+        state: 'lobby',
         hostId: playerId,
         players: {
           [playerId]: { name: playerName, isHost: true }
         },
-        currentQuestionIndex: 0,
-        questions: []
-      });
+        currentQuestion: '',
+        votes: {}
+      };
 
-      listenToRoom();
-      showView('lobby');
+      broadcastState();
+      updateUI();
     });
 
-    // 2. GÅ MED I RUM
-    document.getElementById('joinRoomBtn').addEventListener('click', async () => {
+    // --- 2. GÅ MED I RUM ---
+    document.getElementById('joinRoomBtn').addEventListener('click', () => {
       const nameInput = document.getElementById('playerName').value.trim();
       const codeInput = document.getElementById('roomCodeInput').value.trim();
 
@@ -339,41 +378,80 @@
         return;
       }
       if (codeInput.length !== 4) {
-        alert('Skriv in en giltig 4-siffrig rumskod!');
+        alert('Skriv in en 4-siffrig rumskod!');
         return;
       }
 
       playerName = nameInput;
       currentRoomCode = codeInput;
-      roomRef = ref(db, 'rooms/' + currentRoomCode);
 
-      const snapshot = await get(roomRef);
-      if (!snapshot.exists()) {
-        alert('Hittade inget rum med den koden. Kontrollera koden och försök igen!');
+      const savedRoom = localStorage.getItem(`room_${currentRoomCode}`);
+      if (savedRoom) {
+        roomState = JSON.parse(savedRoom);
+      } else {
+        // Skapa temporär anslutning
+        roomState = {
+          code: currentRoomCode,
+          state: 'lobby',
+          hostId: null,
+          players: {},
+          currentQuestion: '',
+          votes: {}
+        };
+      }
+
+      roomState.players[playerId] = { name: playerName, isHost: false };
+      isHost = roomState.hostId === playerId;
+
+      broadcastState();
+      updateUI();
+    });
+
+    // --- 3. STARTA SPELET (Värd) ---
+    document.getElementById('startGameBtn').addEventListener('click', () => {
+      roomState.state = 'question_input';
+      broadcastState();
+      updateUI();
+    });
+
+    // --- 4. SKICKA IN FRÅGA ---
+    document.getElementById('submitQuestionBtn').addEventListener('click', () => {
+      const qText = document.getElementById('questionInput').value.trim();
+      if (!qText) {
+        alert('Skriv en fråga innan du skickar!');
         return;
       }
 
-      // Lägg till spelaren i rummet
-      await update(ref(db, `rooms/${currentRoomCode}/players/${playerId}`), {
-        name: playerName,
-        isHost: false
-      });
+      roomState.currentQuestion = qText;
+      roomState.votes = {};
+      roomState.state = 'voting';
 
-      listenToRoom();
-      showView('lobby');
+      document.getElementById('questionInput').value = '';
+      broadcastState();
+      updateUI();
     });
 
-    // REALTIDS-LYSSNARE PÅ FIREBASE
-    function listenToRoom() {
-      onValue(roomRef, (snapshot) => {
-        const data = snapshot.val();
-        if (!data) return;
+    // --- NÄSTA FRÅGA ---
+    document.getElementById('nextRoundBtn').addEventListener('click', () => {
+      roomState.state = 'question_input';
+      roomState.votes = {};
+      broadcastState();
+      updateUI();
+    });
 
-        // Uppdatera Lobbyn
-        document.getElementById('displayRoomCode').innerText = data.code;
-        const playersArray = data.players ? Object.entries(data.players) : [];
+    // --- UPPFÄRDAG ÄNDRINGAR I UI ---
+    function updateUI() {
+      if (!roomState.code) return;
+
+      // Visa rätt vy
+      showView(roomState.state);
+
+      // 1. Lobby Vy
+      if (roomState.state === 'lobby') {
+        document.getElementById('displayRoomCode').innerText = roomState.code;
+        const playersArray = Object.entries(roomState.players);
         document.getElementById('playerCount').innerText = `${playersArray.length} spelare`;
-        
+
         const playerListEl = document.getElementById('playerList');
         playerListEl.innerHTML = '';
         playersArray.forEach(([id, p]) => {
@@ -386,210 +464,152 @@
           playerListEl.appendChild(li);
         });
 
-        // Visa startknapp för värd
-        if (data.hostId === playerId) {
+        if (isHost || roomState.hostId === playerId) {
           document.getElementById('hostControls').classList.remove('hidden');
           document.getElementById('guestWaitMsg').classList.add('hidden');
-          document.getElementById('nextRoundBtn').classList.remove('hidden');
         } else {
           document.getElementById('hostControls').classList.add('hidden');
           document.getElementById('guestWaitMsg').classList.remove('hidden');
+        }
+      }
+
+      // 2. Röstnings Vy
+      if (roomState.state === 'voting') {
+        document.getElementById('currentQuestionText').innerText = `"${roomState.currentQuestion}"`;
+        const candidatesContainer = document.getElementById('voteCandidates');
+        candidatesContainer.innerHTML = '';
+
+        const hasVoted = roomState.votes[playerId];
+
+        Object.entries(roomState.players).forEach(([pId, pData]) => {
+          const btn = document.createElement('button');
+          btn.className = `w-full p-4 rounded-xl font-bold text-lg text-left flex justify-between items-center transition ${
+            hasVoted === pId 
+              ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg scale-[1.02]' 
+              : 'bg-slate-800/80 hover:bg-indigo-600 text-white border border-white/10'
+          }`;
+
+          btn.innerHTML = `
+            <span>${escapeHtml(pData.name)}</span>
+            ${hasVoted === pId ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-regular fa-circle"></i>'}
+          `;
+
+          btn.onclick = () => {
+            roomState.votes[playerId] = pId;
+            
+            // Kontrollera om alla har röstat
+            const totalPlayers = Object.keys(roomState.players).length;
+            const totalVotes = Object.keys(roomState.votes).length;
+            if (totalVotes >= totalPlayers) {
+              roomState.state = 'results';
+            }
+
+            broadcastState();
+            updateUI();
+          };
+
+          candidatesContainer.appendChild(btn);
+        });
+
+        if (hasVoted) {
+          document.getElementById('votingStatusMsg').innerText = 'Din röst är registrerad! Väntar på resten av spelarna...';
+        } else {
+          document.getElementById('votingStatusMsg').innerText = 'Klicka på en spelare för att lägga din anonyma röst.';
+        }
+      }
+
+      // 3. Resultat Vy
+      if (roomState.state === 'results') {
+        document.getElementById('resultQuestionText').innerText = `"${roomState.currentQuestion}"`;
+
+        const players = roomState.players || {};
+        const votes = roomState.votes || {};
+
+        const voteCounts = {};
+        Object.keys(players).forEach(id => { voteCounts[id] = 0; });
+        Object.values(votes).forEach(targetId => {
+          if (voteCounts[targetId] !== undefined) {
+            voteCounts[targetId]++;
+          }
+        });
+
+        const labels = Object.keys(players).map(id => players[id].name);
+        const scores = Object.keys(players).map(id => voteCounts[id]);
+
+        let maxVotes = -1;
+        let winnerName = '';
+        Object.keys(players).forEach(id => {
+          if (voteCounts[id] > maxVotes) {
+            maxVotes = voteCounts[id];
+            winnerName = players[id].name;
+          }
+        });
+
+        document.getElementById('vinnerAnnouncement').innerText = maxVotes > 0 
+          ? `🏆 Flest röster fick: ${winnerName} (${maxVotes} st)!`
+          : 'Inga röster registrerades.';
+
+        if (maxVotes > 0 && typeof confetti === 'function') {
+          confetti({
+            particleCount: 80,
+            spread: 70,
+            origin: { y: 0.6 }
+          });
+        }
+
+        if (isHost || roomState.hostId === playerId) {
+          document.getElementById('nextRoundBtn').classList.remove('hidden');
+        } else {
           document.getElementById('nextRoundBtn').classList.add('hidden');
         }
 
-        // Hantera Vy-skiften i realtid baserat på state
-        if (data.state === 'lobby') {
-          showView('lobby');
-        } else if (data.state === 'question_input') {
-          showView('questionInput');
-        } else if (data.state === 'voting') {
-          renderVotingView(data);
-          showView('voting');
-        } else if (data.state === 'results') {
-          renderResultsView(data);
-          showView('results');
+        // Rendera Chart.js
+        const ctx = document.getElementById('resultsChart').getContext('2d');
+        if (chartInstance) {
+          chartInstance.destroy();
         }
-      });
-    }
 
-    // VÄRD STARTAR SPELET
-    document.getElementById('startGameBtn').addEventListener('click', () => {
-      update(roomRef, { state: 'question_input' });
-    });
-
-    // SKICKA IN FRÅGA
-    document.getElementById('submitQuestionBtn').addEventListener('click', async () => {
-      const qText = document.getElementById('questionInput').value.trim();
-      if (!qText) {
-        alert('Skriv en fråga innan du skickar!');
-        return;
-      }
-
-      const qRef = push(child(roomRef, 'questions'));
-      await set(qRef, {
-        text: qText,
-        askedBy: playerName,
-        votes: {}
-      });
-
-      document.getElementById('questionInput').value = '';
-      
-      // Ändra till röstningsläge
-      update(roomRef, { 
-        state: 'voting',
-        currentQuestionKey: qRef.key
-      });
-    });
-
-    // RENDERINGS-LOGIK FÖR RÖSTNING
-    function renderVotingView(data) {
-      if (!data.questions || !data.currentQuestionKey) return;
-      const currentQ = data.questions[data.currentQuestionKey];
-      if (!currentQ) return;
-
-      document.getElementById('currentQuestionText').innerText = `"${currentQ.text}"`;
-      
-      const candidatesContainer = document.getElementById('voteCandidates');
-      candidatesContainer.innerHTML = '';
-
-      const players = data.players || {};
-      const hasVoted = currentQ.votes && currentQ.votes[playerId];
-
-      Object.entries(players).forEach(([pId, pData]) => {
-        const btn = document.createElement('button');
-        btn.className = `w-full p-4 rounded-xl font-bold text-lg text-left flex justify-between items-center transition ${
-          hasVoted && currentQ.votes[playerId] === pId 
-            ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg' 
-            : 'bg-slate-800/80 hover:bg-indigo-600 text-white border border-white/10'
-        }`;
-
-        btn.innerHTML = `
-          <span>${escapeHtml(pData.name)}</span>
-          ${hasVoted && currentQ.votes[playerId] === pId ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-regular fa-circle"></i>'}
-        `;
-
-        btn.onclick = () => {
-          // Registrera röst i Firebase
-          update(ref(db, `rooms/${currentRoomCode}/questions/${data.currentQuestionKey}/votes/${playerId}`), pId);
-        };
-
-        candidatesContainer.appendChild(btn);
-      });
-
-      if (hasVoted) {
-        document.getElementById('votingStatusMsg').innerText = 'Din röst är registrerad! Väntar på att alla ska rösta...';
-      } else {
-        document.getElementById('votingStatusMsg').innerText = 'Klicka på en spelare för att lägga din anonyma röst.';
-      }
-
-      // Om alla har röstat och man är värd -> visa resultat automatiskt
-      const totalPlayers = Object.keys(players).length;
-      const totalVotes = currentQ.votes ? Object.keys(currentQ.votes).length : 0;
-      if (isHost && totalVotes >= totalPlayers && totalPlayers > 0) {
-        update(roomRef, { state: 'results' });
-      }
-    }
-
-    // RENDERINGS-LOGIK FÖR RESULTAT (CHART.JS + CONFETTI)
-    function renderResultsView(data) {
-      if (!data.questions || !data.currentQuestionKey) return;
-      const currentQ = data.questions[data.currentQuestionKey];
-      if (!currentQ) return;
-
-      document.getElementById('resultQuestionText').innerText = `"${currentQ.text}"`;
-
-      const players = data.players || {};
-      const votes = currentQ.votes || {};
-
-      // Räkna röster per spelare
-      const voteCounts = {};
-      Object.keys(players).forEach(pId => { voteCounts[pId] = 0; });
-      Object.values(votes).forEach(targetId => {
-        if (voteCounts[targetId] !== undefined) {
-          voteCounts[targetId]++;
-        }
-      });
-
-      const labels = Object.keys(players).map(id => players[id].name);
-      const scores = Object.keys(players).map(id => voteCounts[id]);
-
-      // Hitta Vinnaren
-      let maxVotes = -1;
-      let winnerName = '';
-      Object.keys(players).forEach(id => {
-        if (voteCounts[id] > maxVotes) {
-          maxVotes = voteCounts[id];
-          winnerName = players[id].name;
-        }
-      });
-
-      document.getElementById('vinnerAnnouncement').innerText = maxVotes > 0 
-        ? `🏆 Flest röster fick: ${winnerName} (${maxVotes} st)!`
-        : 'Inga röster har lagts än!';
-
-      // Avfyra Confetti om vi just kom till resultat
-      if (maxVotes > 0) {
-        confetti({
-          particleCount: 80,
-          spread: 70,
-          origin: { y: 0.6 }
-        });
-      }
-
-      // Rendera Chart.js Diagram
-      const ctx = document.getElementById('resultsChart').getContext('2d');
-      if (chartInstance) {
-        chartInstance.destroy();
-      }
-
-      chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Antal Röster',
-            data: scores,
-            backgroundColor: [
-              'rgba(99, 102, 241, 0.7)',
-              'rgba(168, 85, 247, 0.7)',
-              'rgba(236, 72, 153, 0.7)',
-              'rgba(16, 185, 129, 0.7)',
-              'rgba(245, 158, 11, 0.7)'
-            ],
-            borderColor: [
-              '#6366f1', '#a855f7', '#ec4899', '#10b981', '#f59e0b'
-            ],
-            borderWidth: 2,
-            borderRadius: 8
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false }
+        chartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Antal Röster',
+              data: scores,
+              backgroundColor: [
+                'rgba(99, 102, 241, 0.8)',
+                'rgba(168, 85, 247, 0.8)',
+                'rgba(236, 72, 153, 0.8)',
+                'rgba(16, 185, 129, 0.8)',
+                'rgba(245, 158, 11, 0.8)'
+              ],
+              borderColor: [
+                '#6366f1', '#a855f7', '#ec4899', '#10b981', '#f59e0b'
+              ],
+              borderWidth: 2,
+              borderRadius: 8
+            }]
           },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { stepSize: 1, color: '#94a3b8' },
-              grid: { color: 'rgba(255, 255, 255, 0.05)' }
-            },
-            x: {
-              ticks: { color: '#f8fafc', font: { weight: 'bold' } },
-              grid: { display: false }
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1, color: '#94a3b8' },
+                grid: { color: 'rgba(255, 255, 255, 0.05)' }
+              },
+              x: {
+                ticks: { color: '#f8fafc', font: { weight: 'bold' } },
+                grid: { display: false }
+              }
             }
           }
-        }
-      });
+        });
+      }
     }
 
-    // NÄSTA FRÅGA / NÄSTA RUNDA (Endast Värden)
-    document.getElementById('nextRoundBtn').addEventListener('click', () => {
-      update(roomRef, { state: 'question_input' });
-    });
-
-    // Hjälpfunktion för att förhindra XSS
     function escapeHtml(text) {
       const div = document.createElement('div');
       div.innerText = text;
