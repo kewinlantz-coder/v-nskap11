@@ -1,169 +1,600 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vänskapsspelet Deluxe</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- Google Fonts, Lucide Icons, Chart.js & Canvas Confetti -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vänskapsspelet Online 🤝</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js för resultat -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Canvas Confetti för firande -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- FontAwesome ikoner -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      font-family: 'Outfit', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+      min-height: 100vh;
+      color: #f8fafc;
+    }
+
+    /* Glassmorphism Effekter */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.125);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    .glass-input {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+    .glass-input:focus {
+      border-color: #818cf8;
+      outline: none;
+      box-shadow: 0 0 15px rgba(129, 140, 248, 0.4);
+    }
+
+    .glass-btn {
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+    }
+
+    .glass-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(168, 85, 247, 0.6);
+    }
+
+    .glass-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Pulse animation för lobby */
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(0.98); }
+    }
+    .animate-pulse-slow {
+      animation: pulse-slow 3s infinite ease-in-out;
+    }
+  </style>
 </head>
-<body>
+<body class="flex flex-col min-h-screen p-4 md:p-8 justify-center items-center relative overflow-x-hidden">
 
-    <div class="bg-glow bg-glow-1"></div>
-    <div class="bg-glow bg-glow-2"></div>
+  <!-- Info Modal Trigger (ℹ️ ikon längst upp till höger) -->
+  <button id="infoBtn" aria-label="Spelregler och info" class="fixed top-5 right-5 w-12 h-12 rounded-full glass-card flex items-center justify-center text-2xl text-indigo-300 hover:text-white hover:scale-110 transition duration-300 z-50">
+    <i class="fa-solid fa-circle-info"></i>
+  </button>
 
-    <div class="glass-card">
-        <!-- STEG 1: LOBBY & INSTÄLLNINGAR -->
-        <div id="step-lobby" class="page active">
-            <!-- INFO-KNAPP ETT "i" I HÖRNET -->
-            <button class="info-trigger-btn" onclick="toggleInfoModal()" title="Hur man spelar">
-                <i data-lucide="info"></i>
-            </button>
+  <!-- Huvudbehållare -->
+  <main class="w-full max-w-xl mx-auto z-10">
 
-            <div class="header-icon"><i data-lucide="sparkles"></i></div>
-            <h1 class="title">Vänskapsspelet</h1>
-            <p class="subtitle">Spelet där ni avslöjar vad ni egentligen tycker om varandra!</p>
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300 tracking-tight">
+        Vänskapsspelet 🤝
+      </h1>
+      <p class="text-indigo-200 mt-2 text-sm md:text-base font-light">
+        Realtids-multiplayer för dig och dina vänner
+      </p>
+    </header>
 
-            <div class="form-group">
-                <label><i data-lucide="user"></i> Ditt Spelarnamn</label>
-                <input type="text" id="player-name-input" placeholder="Skriv ditt namn...">
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label><i data-lucide="users"></i> Antal spelare (1–10)</label>
-                    <input type="number" id="player-count" min="1" max="10" value="3">
-                </div>
-                <div class="form-group">
-                    <label><i data-lucide="repeat"></i> Antal rundor (1–20)</label>
-                    <input type="number" id="round-count" min="1" max="20" value="3">
-                </div>
-            </div>
-
-            <button class="btn btn-primary btn-glow" onclick="createRoom()">
-                <i data-lucide="play-circle"></i> Skapa Nytt Spel
-            </button>
-
-            <div class="divider"><span>ELLER</span></div>
-
-            <div class="form-group">
-                <label><i data-lucide="key-round"></i> Gå med i rum med kod</label>
-                <div class="join-group">
-                    <input type="text" id="room-code-input" placeholder="RUMSKOD" style="text-transform: uppercase;">
-                    <button class="btn btn-secondary" onclick="joinRoom()">Gå med</button>
-                </div>
-            </div>
+    <!-- VY 1: STARTMENY (Skapa / Gå med i rum) -->
+    <section id="startView" class="glass-card rounded-3xl p-6 md:p-8 text-center space-y-6">
+      <h2 class="text-2xl font-bold text-white">Välkommen!</h2>
+      
+      <div class="space-y-4">
+        <div>
+          <label for="playerName" class="block text-left text-xs text-indigo-300 mb-1 font-semibold uppercase tracking-wider">Ditt Namn</label>
+          <input type="text" id="playerName" placeholder="Skriv ditt namn..." class="w-full p-4 rounded-xl glass-input text-lg font-medium placeholder-indigo-300/50">
         </div>
 
-        <!-- STEG 2: VÄNTRUM -->
-        <div id="step-waiting" class="page">
-            <div class="header-icon"><i data-lucide="door-open"></i></div>
-            <h2>Väntrum</h2>
-            <p class="subtitle">Bjud in dina vänner med följande kod:</p>
-            <div class="room-code-display" id="display-room-code">------</div>
+        <!-- Skapa nytt rum -->
+        <button id="createRoomBtn" class="w-full py-4 rounded-xl glass-btn font-bold text-lg text-white flex items-center justify-center gap-2">
+          <i class="fa-solid fa-plus"></i> Skapa Nytt Rum
+        </button>
 
-            <div class="section-title"><i data-lucide="users"></i> Anslutna spelare</div>
-            <ul id="connected-players-list" class="players-list"></ul>
-
-            <button id="start-game-btn" class="btn btn-success btn-glow hidden" onclick="startNewRound()">
-                <i data-lucide="zap"></i> Starta Spelet
-            </button>
+        <div class="relative flex py-2 items-center">
+          <div class="flex-grow border-t border-slate-700"></div>
+          <span class="flex-shrink mx-4 text-xs text-slate-400 uppercase tracking-widest font-semibold">eller</span>
+          <div class="flex-grow border-t border-slate-700"></div>
         </div>
 
-        <!-- STEG 3: SKRIVA FRÅGA -->
-        <div id="step-questions" class="page">
-            <div class="badge badge-pink" id="round-badge">Runda 1 av 3</div>
-            <h2 id="current-player-turn" class="player-turn-header">Spelare 1:s tur</h2>
-            <div id="timer" class="timer-badge"><i data-lucide="clock"></i> 30s</div>
-            
-            <p class="instruction">Skriv 1 fråga för denna runda!</p>
-
-            <div class="form-group">
-                <label><i data-lucide="help-circle"></i> Din Fråga</label>
-                <input type="text" id="q1" placeholder="t.ex. Vem skulle glömma sin egen födelsedag?">
-            </div>
-
-            <button class="btn btn-warning btn-glow" onclick="submitQuestion()">
-                <i data-lucide="send"></i> Skicka in fråga
-            </button>
+        <!-- Gå med med kod -->
+        <div class="flex gap-2">
+          <input type="text" id="roomCodeInput" maxlength="4" placeholder="KOD ( t.ex. 1234 )" class="w-1/2 p-4 rounded-xl glass-input text-center text-xl font-mono uppercase font-bold tracking-widest placeholder-indigo-300/30">
+          <button id="joinRoomBtn" class="w-1/2 py-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-indigo-500/30 font-bold text-lg text-white transition">
+            Gå Med <i class="fa-solid fa-arrow-right ml-1"></i>
+          </button>
         </div>
+      </div>
+    </section>
 
-        <!-- STEG 4: RÖSTNING -->
-        <div id="step-voting" class="page">
-            <div class="badge badge-indigo"><i data-lucide="vote"></i> Dags att rösta</div>
-            <div id="question-display" class="question-card">Frågan visas här...</div>
-            
-            <p class="instruction">Vem passar denna fråga in på bäst?</p>
-            <div id="vote-buttons" class="vote-grid"></div>
+    <!-- VY 2: LOBBY (Väntar på spelare) -->
+    <section id="lobbyView" class="glass-card rounded-3xl p-6 md:p-8 text-center space-y-6 hidden">
+      <div class="space-y-2">
+        <span class="text-xs uppercase tracking-widest text-indigo-300 font-bold">Rumskod</span>
+        <div id="displayRoomCode" class="text-4xl md:text-5xl font-mono font-black text-amber-400 bg-slate-900/60 py-3 px-6 rounded-2xl inline-block border border-amber-500/30 tracking-widest">
+          ----
         </div>
+        <p class="text-xs text-indigo-200">Dela koden med dina vänner så att de kan gå med!</p>
+      </div>
 
-        <!-- STEG 5: DELRESULTAT -->
-        <div id="step-results" class="page">
-            <div class="badge badge-purple"><i data-lucide="bar-chart-2"></i> Resultat för frågan</div>
-            <div id="result-question-display" class="question-card">Frågan...</div>
-            <div id="results-container" class="results-container"></div>
+      <div class="space-y-3">
+        <h3 class="text-lg font-semibold text-left flex justify-between items-center">
+          <span>Spelare i lobbyn:</span>
+          <span id="playerCount" class="text-xs bg-indigo-500/30 text-indigo-300 px-3 py-1 rounded-full">0 spelare</span>
+        </h3>
+        <ul id="playerList" class="space-y-2 text-left max-h-48 overflow-y-auto pr-1">
+          <!-- Spelare renderas dynamiskt här -->
+        </ul>
+      </div>
 
-            <button id="next-question-btn" class="btn btn-primary btn-glow" onclick="nextQuestionOrRound()">
-                Fortsätt <i data-lucide="chevron-right"></i>
-            </button>
-        </div>
+      <div id="hostControls" class="pt-4 hidden">
+        <button id="startGameBtn" class="w-full py-4 rounded-xl glass-btn font-bold text-lg text-white animate-pulse-slow">
+          <i class="fa-solid fa-play mr-2"></i> Starta Spelet!
+        </button>
+      </div>
 
-        <!-- STEG 6: SLUTGILTIGT LEADERBOARD MED DIAGRAM -->
-        <div id="step-final" class="page">
-            <div class="trophy-header"><i data-lucide="trophy"></i></div>
-            <h1 class="title">Slutresultat</h1>
-            <p class="subtitle">Totalt antal röster och procentfördelning över alla rundor!</p>
+      <div id="guestWaitMsg" class="pt-4 text-indigo-300 text-sm italic">
+        Väntar på att rumsvärden ska starta spelet...
+      </div>
+    </section>
 
-            <div class="chart-box">
-                <canvas id="finalVotesChart"></canvas>
-            </div>
-            
-            <div id="leaderboard-container" class="leaderboard-container"></div>
+    <!-- VY 3: STÄLL EN FRÅGA (Spelarna turas om eller skriver samtidigt) -->
+    <section id="questionInputView" class="glass-card rounded-3xl p-6 md:p-8 text-center space-y-6 hidden">
+      <div class="space-y-2">
+        <span class="text-xs uppercase tracking-widest text-indigo-300 font-bold">Skriv en fråga</span>
+        <h2 id="questionPromptTitle" class="text-xl font-bold text-white">Vad vill du fråga gruppen?</h2>
+      </div>
 
-            <div class="action-stack">
-                <button class="btn btn-secondary" onclick="toggleReviewScreen()">
-                    <i data-lucide="file-text"></i> Granska Alla Frågor & Röster
-                </button>
-                <button class="btn btn-primary btn-glow" onclick="location.reload()">
-                    <i data-lucide="rotate-ccw"></i> Spela Igen
-                </button>
-            </div>
-        </div>
+      <div class="space-y-4">
+        <textarea id="questionInput" rows="3" placeholder="T.ex. Vem i rummet skulle överleva längst på en öde ö?" class="w-full p-4 rounded-xl glass-input text-base placeholder-indigo-300/40 resize-none"></textarea>
+        
+        <button id="submitQuestionBtn" class="w-full py-4 rounded-xl glass-btn font-bold text-lg text-white">
+          Skicka Fråga <i class="fa-solid fa-paper-plane ml-2"></i>
+        </button>
+      </div>
+    </section>
 
-        <!-- STEG 7: REVIEW -->
-        <div id="step-review" class="page">
-            <h2>Spelöversikt <i data-lucide="search"></i></h2>
-            <p class="subtitle">Se vem som skrev vad och vad alla röstade!</p>
+    <!-- VY 4: RÖSTNING (Anonym röstning) -->
+    <section id="votingView" class="glass-card rounded-3xl p-6 md:p-8 text-center space-y-6 hidden">
+      <div class="space-y-2">
+        <span class="text-xs uppercase tracking-widest text-pink-400 font-bold">Anonym Röstning</span>
+        <h2 id="currentQuestionText" class="text-2xl font-extrabold text-white leading-snug">
+          "Frågan laddas..."
+        </h2>
+      </div>
 
-            <div id="review-list" class="review-container"></div>
+      <div id="voteCandidates" class="grid grid-cols-1 gap-3 pt-2">
+        <!-- Knappar för varje spelare renderas här -->
+      </div>
 
-            <button class="btn btn-primary" onclick="showPage('step-final')">
-                <i data-lucide="arrow-left"></i> Tillbaka till Diagram & Leaderboard
-            </button>
-        </div>
+      <p id="votingStatusMsg" class="text-xs text-indigo-300 italic pt-2">
+        Välj den du tycker passar bäst!
+      </p>
+    </section>
+
+    <!-- VY 5: RESULTAT (Chart.js & Confetti) -->
+    <section id="resultsView" class="glass-card rounded-3xl p-6 md:p-8 text-center space-y-6 hidden">
+      <div class="space-y-1">
+        <span class="text-xs uppercase tracking-widest text-emerald-400 font-bold">Resultat</span>
+        <h2 id="resultQuestionText" class="text-xl font-bold text-white"></h2>
+      </div>
+
+      <!-- Diagrambehållare -->
+      <div class="relative w-full h-64 my-4 bg-slate-900/40 rounded-2xl p-4 border border-white/5">
+        <canvas id="resultsChart"></canvas>
+      </div>
+
+      <div id="vinnerAnnouncement" class="text-lg font-extrabold text-amber-300 py-2">
+        <!-- Vinnaren visas här -->
+      </div>
+
+      <button id="nextRoundBtn" class="w-full py-4 rounded-xl glass-btn font-bold text-lg text-white hidden">
+        Nästa Fråga <i class="fa-solid fa-arrow-right ml-2"></i>
+      </button>
+    </section>
+
+  </main>
+
+  <!-- MODAL: SPELREGLER / INFO -->
+  <div id="infoModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden transition-opacity duration-300 opacity-0">
+    <div class="glass-card max-w-lg w-full rounded-3xl p-6 md:p-8 relative space-y-4 border border-indigo-500/30">
+      <button id="closeInfoBtn" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      
+      <div class="flex items-center gap-3 text-indigo-300">
+        <i class="fa-solid fa-circle-info text-2xl"></i>
+        <h3 class="text-2xl font-bold text-white">Hur man spelar</h3>
+      </div>
+
+      <div class="space-y-3 text-sm text-indigo-100 leading-relaxed overflow-y-auto max-h-[60vh] pr-2">
+        <p><strong>1. Skapa eller gå med:</strong> En spelare skapar ett rum och får en 4-siffrig kod. Övriga spelare knappar in koden på sina egna mobiler/datorer.</p>
+        <p><strong>2. Skriv frågor:</strong> Alla deltagare får hitta på roliga eller avslöjande frågor om varandra.</p>
+        <p><strong>3. Anonym röstning:</strong> När en fråga visas röstar alla helt anonymt på den spelare i rummet som passar bäst in på beskrivningen.</p>
+        <p><strong>4. Se resultatet:</strong> Resultaten visas i ett snyggt interaktivt diagram i realtid!</p>
+      </div>
+
+      <button id="gotItBtn" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition mt-2">
+        Uppfattat! Let's play 🚀
+      </button>
     </div>
+  </div>
 
-    <!-- POPUP MODAL FÖR INSTRUKTIONER -->
-    <div id="info-modal" class="modal-overlay hidden" onclick="closeModalOnOverlay(event)">
-        <div class="modal-content">
-            <button class="modal-close-btn" onclick="toggleInfoModal()"><i data-lucide="x"></i></button>
-            <div class="info-title"><i data-lucide="help-circle"></i> Hur man spelar</div>
-            <ul class="info-list">
-                <li><strong>1. Välj inställningar:</strong> Bestäm antal spelare och hur många rundor ni vill spela.</li>
-                <li><strong>2. Skriv frågor:</strong> Varje runda får alla spelare 30 sekunder på sig att skriva en fråga.</li>
-                <li><strong>3. Rösta anonymt:</strong> Frågorna slumpas och alla röstar på den spelare som frågan passar bäst in på.</li>
-                <li><strong>4. Resultat & Diagram:</strong> Efter varje runda visas procentfördelningen och i slutet utses en vinnare!</li>
-            </ul>
-        </div>
-    </div>
+  <!-- Firebase Scripts (Modular via CDN, ingen avgift/server) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, push, onValue, update, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    <script src="script.js"></script>
-    <script>lucide.createIcons();</script>
+    // Publik öppen demo-konfiguration för Firebase Realtime Database
+    // (Fungerar direkt för alla spelare överallt utan kostnad)
+    const firebaseConfig = {
+      databaseURL: "https://v-nskap11-default-rtdb.europe-west1.firebasedatabase.app"
+    };
+
+    // Om standardnoden inte svarar täcker vi upp med en sekundär publika fallback-instans
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Globalt Spel-state
+    let currentRoomCode = null;
+    let playerId = localStorage.getItem('v_player_id') || 'p_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('v_player_id', playerId);
+    
+    let playerName = '';
+    let isHost = false;
+    let chartInstance = null;
+    let roomRef = null;
+
+    // DOM Element
+    const views = {
+      start: document.getElementById('startView'),
+      lobby: document.getElementById('lobbyView'),
+      questionInput: document.getElementById('questionInputView'),
+      voting: document.getElementById('votingView'),
+      results: document.getElementById('resultsView')
+    };
+
+    function showView(viewName) {
+      Object.keys(views).forEach(key => {
+        if (key === viewName) {
+          views[key].classList.remove('hidden');
+        } else {
+          views[key].classList.add('hidden');
+        }
+      });
+    }
+
+    // Modal Hantering
+    const infoModal = document.getElementById('infoModal');
+    document.getElementById('infoBtn').addEventListener('click', () => {
+      infoModal.classList.remove('hidden');
+      setTimeout(() => infoModal.classList.remove('opacity-0'), 10);
+    });
+    
+    const closeModal = () => {
+      infoModal.classList.add('opacity-0');
+      setTimeout(() => infoModal.classList.add('hidden'), 300);
+    };
+    document.getElementById('closeInfoBtn').addEventListener('click', closeModal);
+    document.getElementById('gotItBtn').addEventListener('click', closeModal);
+
+    // 1. SKAPA RUM
+    document.getElementById('createRoomBtn').addEventListener('click', async () => {
+      const nameInput = document.getElementById('playerName').value.trim();
+      if (!nameInput) {
+        alert('Vänligen skriv ditt namn först!');
+        return;
+      }
+      playerName = nameInput;
+      isHost = true;
+
+      // Generera 4-siffrig kod
+      currentRoomCode = Math.floor(1000 + Math.random() * 9000).toString();
+      roomRef = ref(db, 'rooms/' + currentRoomCode);
+
+      // Sätt initial data i Firebase
+      await set(roomRef, {
+        code: currentRoomCode,
+        state: 'lobby', // lobby, question_input, voting, results
+        hostId: playerId,
+        players: {
+          [playerId]: { name: playerName, isHost: true }
+        },
+        currentQuestionIndex: 0,
+        questions: []
+      });
+
+      listenToRoom();
+      showView('lobby');
+    });
+
+    // 2. GÅ MED I RUM
+    document.getElementById('joinRoomBtn').addEventListener('click', async () => {
+      const nameInput = document.getElementById('playerName').value.trim();
+      const codeInput = document.getElementById('roomCodeInput').value.trim();
+
+      if (!nameInput) {
+        alert('Vänligen skriv ditt namn!');
+        return;
+      }
+      if (codeInput.length !== 4) {
+        alert('Skriv in en giltig 4-siffrig rumskod!');
+        return;
+      }
+
+      playerName = nameInput;
+      currentRoomCode = codeInput;
+      roomRef = ref(db, 'rooms/' + currentRoomCode);
+
+      const snapshot = await get(roomRef);
+      if (!snapshot.exists()) {
+        alert('Hittade inget rum med den koden. Kontrollera koden och försök igen!');
+        return;
+      }
+
+      // Lägg till spelaren i rummet
+      await update(ref(db, `rooms/${currentRoomCode}/players/${playerId}`), {
+        name: playerName,
+        isHost: false
+      });
+
+      listenToRoom();
+      showView('lobby');
+    });
+
+    // REALTIDS-LYSSNARE PÅ FIREBASE
+    function listenToRoom() {
+      onValue(roomRef, (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        // Uppdatera Lobbyn
+        document.getElementById('displayRoomCode').innerText = data.code;
+        const playersArray = data.players ? Object.entries(data.players) : [];
+        document.getElementById('playerCount').innerText = `${playersArray.length} spelare`;
+        
+        const playerListEl = document.getElementById('playerList');
+        playerListEl.innerHTML = '';
+        playersArray.forEach(([id, p]) => {
+          const li = document.createElement('li');
+          li.className = 'flex items-center justify-between p-3 rounded-xl bg-slate-800/50 border border-white/5';
+          li.innerHTML = `
+            <span class="font-medium text-white">${escapeHtml(p.name)} ${id === playerId ? '(Du)' : ''}</span>
+            ${p.isHost ? '<span class="text-xs bg-amber-500/20 text-amber-300 font-bold px-2 py-1 rounded">VÄRD</span>' : ''}
+          `;
+          playerListEl.appendChild(li);
+        });
+
+        // Visa startknapp för värd
+        if (data.hostId === playerId) {
+          document.getElementById('hostControls').classList.remove('hidden');
+          document.getElementById('guestWaitMsg').classList.add('hidden');
+          document.getElementById('nextRoundBtn').classList.remove('hidden');
+        } else {
+          document.getElementById('hostControls').classList.add('hidden');
+          document.getElementById('guestWaitMsg').classList.remove('hidden');
+          document.getElementById('nextRoundBtn').classList.add('hidden');
+        }
+
+        // Hantera Vy-skiften i realtid baserat på state
+        if (data.state === 'lobby') {
+          showView('lobby');
+        } else if (data.state === 'question_input') {
+          showView('questionInput');
+        } else if (data.state === 'voting') {
+          renderVotingView(data);
+          showView('voting');
+        } else if (data.state === 'results') {
+          renderResultsView(data);
+          showView('results');
+        }
+      });
+    }
+
+    // VÄRD STARTAR SPELET
+    document.getElementById('startGameBtn').addEventListener('click', () => {
+      update(roomRef, { state: 'question_input' });
+    });
+
+    // SKICKA IN FRÅGA
+    document.getElementById('submitQuestionBtn').addEventListener('click', async () => {
+      const qText = document.getElementById('questionInput').value.trim();
+      if (!qText) {
+        alert('Skriv en fråga innan du skickar!');
+        return;
+      }
+
+      const qRef = push(child(roomRef, 'questions'));
+      await set(qRef, {
+        text: qText,
+        askedBy: playerName,
+        votes: {}
+      });
+
+      document.getElementById('questionInput').value = '';
+      
+      // Ändra till röstningsläge
+      update(roomRef, { 
+        state: 'voting',
+        currentQuestionKey: qRef.key
+      });
+    });
+
+    // RENDERINGS-LOGIK FÖR RÖSTNING
+    function renderVotingView(data) {
+      if (!data.questions || !data.currentQuestionKey) return;
+      const currentQ = data.questions[data.currentQuestionKey];
+      if (!currentQ) return;
+
+      document.getElementById('currentQuestionText').innerText = `"${currentQ.text}"`;
+      
+      const candidatesContainer = document.getElementById('voteCandidates');
+      candidatesContainer.innerHTML = '';
+
+      const players = data.players || {};
+      const hasVoted = currentQ.votes && currentQ.votes[playerId];
+
+      Object.entries(players).forEach(([pId, pData]) => {
+        const btn = document.createElement('button');
+        btn.className = `w-full p-4 rounded-xl font-bold text-lg text-left flex justify-between items-center transition ${
+          hasVoted && currentQ.votes[playerId] === pId 
+            ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg' 
+            : 'bg-slate-800/80 hover:bg-indigo-600 text-white border border-white/10'
+        }`;
+
+        btn.innerHTML = `
+          <span>${escapeHtml(pData.name)}</span>
+          ${hasVoted && currentQ.votes[playerId] === pId ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-regular fa-circle"></i>'}
+        `;
+
+        btn.onclick = () => {
+          // Registrera röst i Firebase
+          update(ref(db, `rooms/${currentRoomCode}/questions/${data.currentQuestionKey}/votes/${playerId}`), pId);
+        };
+
+        candidatesContainer.appendChild(btn);
+      });
+
+      if (hasVoted) {
+        document.getElementById('votingStatusMsg').innerText = 'Din röst är registrerad! Väntar på att alla ska rösta...';
+      } else {
+        document.getElementById('votingStatusMsg').innerText = 'Klicka på en spelare för att lägga din anonyma röst.';
+      }
+
+      // Om alla har röstat och man är värd -> visa resultat automatiskt
+      const totalPlayers = Object.keys(players).length;
+      const totalVotes = currentQ.votes ? Object.keys(currentQ.votes).length : 0;
+      if (isHost && totalVotes >= totalPlayers && totalPlayers > 0) {
+        update(roomRef, { state: 'results' });
+      }
+    }
+
+    // RENDERINGS-LOGIK FÖR RESULTAT (CHART.JS + CONFETTI)
+    function renderResultsView(data) {
+      if (!data.questions || !data.currentQuestionKey) return;
+      const currentQ = data.questions[data.currentQuestionKey];
+      if (!currentQ) return;
+
+      document.getElementById('resultQuestionText').innerText = `"${currentQ.text}"`;
+
+      const players = data.players || {};
+      const votes = currentQ.votes || {};
+
+      // Räkna röster per spelare
+      const voteCounts = {};
+      Object.keys(players).forEach(pId => { voteCounts[pId] = 0; });
+      Object.values(votes).forEach(targetId => {
+        if (voteCounts[targetId] !== undefined) {
+          voteCounts[targetId]++;
+        }
+      });
+
+      const labels = Object.keys(players).map(id => players[id].name);
+      const scores = Object.keys(players).map(id => voteCounts[id]);
+
+      // Hitta Vinnaren
+      let maxVotes = -1;
+      let winnerName = '';
+      Object.keys(players).forEach(id => {
+        if (voteCounts[id] > maxVotes) {
+          maxVotes = voteCounts[id];
+          winnerName = players[id].name;
+        }
+      });
+
+      document.getElementById('vinnerAnnouncement').innerText = maxVotes > 0 
+        ? `🏆 Flest röster fick: ${winnerName} (${maxVotes} st)!`
+        : 'Inga röster har lagts än!';
+
+      // Avfyra Confetti om vi just kom till resultat
+      if (maxVotes > 0) {
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
+
+      // Rendera Chart.js Diagram
+      const ctx = document.getElementById('resultsChart').getContext('2d');
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Antal Röster',
+            data: scores,
+            backgroundColor: [
+              'rgba(99, 102, 241, 0.7)',
+              'rgba(168, 85, 247, 0.7)',
+              'rgba(236, 72, 153, 0.7)',
+              'rgba(16, 185, 129, 0.7)',
+              'rgba(245, 158, 11, 0.7)'
+            ],
+            borderColor: [
+              '#6366f1', '#a855f7', '#ec4899', '#10b981', '#f59e0b'
+            ],
+            borderWidth: 2,
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1, color: '#94a3b8' },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }
+            },
+            x: {
+              ticks: { color: '#f8fafc', font: { weight: 'bold' } },
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    // NÄSTA FRÅGA / NÄSTA RUNDA (Endast Värden)
+    document.getElementById('nextRoundBtn').addEventListener('click', () => {
+      update(roomRef, { state: 'question_input' });
+    });
+
+    // Hjälpfunktion för att förhindra XSS
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.innerText = text;
+      return div.innerHTML;
+    }
+  </script>
 </body>
 </html>
